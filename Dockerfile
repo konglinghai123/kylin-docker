@@ -52,7 +52,7 @@ RUN set -x \
 ENV HBASE_HOME=/usr/local/hbase
 
 # Installing Kylin
-ARG KYLIN_VERSION=2.2.0
+ARG KYLIN_VERSION=2.5.1
 # COPY apache-kylin-${KYLIN_VERSION}-bin-hbase1x.tar.gz .
 RUN set -x \
     && wget -q http://${MIRROR}/apache/kylin/apache-kylin-${KYLIN_VERSION}/apache-kylin-${KYLIN_VERSION}-bin-hbase1x.tar.gz \
@@ -61,16 +61,18 @@ RUN set -x \
 ENV KYLIN_HOME=/usr/local/kylin
 
 # Setting the PATH environment variable
-ENV PATH=$PATH:$JAVA_HOME/bin:$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$SPARK_HOME/bin:$HIVE_HOME/bin:$HBASE_HOME/bin:$KYLIN_HOME/bin
+ENV PATH=$PATH:$JAVA_HOME/bin:$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$HIVE_HOME/bin:$HBASE_HOME/bin:$KYLIN_HOME/bin
 
-COPY client-conf/core-site.xml $HADOOP_HOME/etc/hadoop/core-site.xml
-COPY client-conf/hdfs-site.xml $HADOOP_HOME/etc/hadoop/hdfs-site.xml
-COPY client-conf/mapred-site.xml $HADOOP_HOME/etc/hadoop/mapred-site.xml
-COPY client-conf/yarn-site.xml $HADOOP_HOME/etc/hadoop/yarn-site.xml
-COPY client-conf/hbase-site.xml $HBASE_HOME/conf/hbase-site.xml
-COPY client-conf/hdfs-site.xml $HBASE_HOME/conf/hdfs-site.xml
-COPY client-conf/hive-site.xml $HIVE_HOME/conf/hive-site.xml
-COPY client-conf/mapred-site.xml $HIVE_HOME/conf/mapred-site.xml
+COPY client-conf /root/client-conf
+RUN set -x \
+    && ln -sf /root/client-conf/core-site.xml $HADOOP_HOME/etc/hadoop/core-site.xml \
+    && ln -sf /root/client-conf/hdfs-site.xml $HADOOP_HOME/etc/hadoop/hdfs-site.xml \
+    && ln -sf /root/client-conf/mapred-site.xml $HADOOP_HOME/etc/hadoop/mapred-site.xml \
+    && ln -sf /root/client-conf/yarn-site.xml $HADOOP_HOME/etc/hadoop/yarn-site.xml \
+    && ln -sf /root/client-conf/hbase-site.xml $HBASE_HOME/conf/hbase-site.xml \
+    && ln -sf /root/client-conf/hdfs-site.xml $HBASE_HOME/conf/hdfs-site.xml \
+    && ln -sf /root/client-conf/hive-site.xml $HIVE_HOME/conf/hive-site.xml \
+    && ln -sf /root/client-conf/mapred-site.xml $HIVE_HOME/conf/mapred-site.xml
 
 # Cleanup
 RUN rm -rf /tmp/*
@@ -79,5 +81,7 @@ WORKDIR /root
 EXPOSE 7070
 
 VOLUME /usr/local/kylin/logs
+VOLUME /usr/local/kylin/conf
+VOLUME /root/client-conf
 
 ENTRYPOINT ["sh", "-c", "/usr/local/kylin/bin/kylin.sh start; bash"]
